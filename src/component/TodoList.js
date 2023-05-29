@@ -1,47 +1,38 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ManageTaskService from '../service/ManageTaskService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const TodoList = ( {tasksData} ) => {
-  // console.log(tasksDatar)
+const TodoList = ({ tasksData }) => {
   const [TasksData, setTasksData] = useState([]);
+  const [AllTasks, setAllTasks] = useState([]);
+
   useEffect(() => {
-    // if (tasksData == null){
-    //   refreshItems()
-    // } else {
-
-    //   setTasksData(tasksData)
-    // }
-    refreshItems()
-  }, [])
-
+    setTasksData(tasksData)
+    ManageTaskService.retrieveAllTasks().then(
+      response => {
+        setAllTasks(response.data)
+      }
+    )
+  }, [tasksData])
 
   const refreshItems = () => {
-    if (tasksData == null){
-      ManageTaskService.retrieveAllTasks().then(
-        response => {
-          setTasksData(response.data)
-        }
-      )
-      // refreshItems()
-    } else {
-
-      setTasksData(tasksData)
-    }
-
-    
+    ManageTaskService.retrieveAllTasks().then(
+      response => {
+        setTasksData(response.data)
+      }
+    )
   }
 
   const handleChange = (task) => {
     return (event) => {
       if (task.done == true) {
-        ManageTaskService.markTaskAsUndone(event.target.id, tasksData[event.target.id - 1]).then(
+        ManageTaskService.markTaskAsUndone(event.target.id, AllTasks[event.target.id - 1]).then(
           response => {
             refreshItems()
           }
         )
       } else if (task.done == false) {
-        ManageTaskService.markTaskAsDone(event.target.id, TasksData[event.target.id - 1]).then(
+        ManageTaskService.markTaskAsDone(event.target.id, AllTasks[event.target.id - 1]).then(
           response => {
             refreshItems()
           }
@@ -52,7 +43,7 @@ const TodoList = ( {tasksData} ) => {
 
   return (
     <div class="row h-100">
-      
+
       <div class="col-12 align-self-start h-75">
         <div class="row align-items-start">
           <div class="col">

@@ -35,10 +35,7 @@ export class ManageTaskService {
 
     async filterTasks(filters) {
         try {
-            console.log("filters")
-            console.log(filters)
             const data = axios.post(`${apiKey}/filter`, filters, { crossdomain: true })
-            console.log(data)
             return data;
         } catch (err) {
             console.log(err);

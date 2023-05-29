@@ -7,33 +7,34 @@ import TodoList from './component/TodoList'
 import ManageTaskService from './service/ManageTaskService';
 
 function App() {
-  const [filteredTasks, setFilteredTasks] = useState(null);
+  const [data, setData] = useState([]);
 
   useEffect(() => {
-    retrieveAllTasks();
-  }, []);
-
-  const retrieveAllTasks = () => {
-    ManageTaskService.retrieveAllTasks()
+    if (data.length === 0){
+      ManageTaskService.retrieveAllTasks()
       .then(response => {
-        const tasks = response.data;
-        // setTasksData(tasks);
-        setFilteredTasks(tasks);
+        setData(response.data);
       })
+    } 
+  }, [data]);
+
+  const handleDataChange = (newData) => {
+    console.log(newData)
+    setData(newData);
   };
 
   return (
     <div class="container shadow-lg p-3 mb-5 bg-white rounded mt-4">
       <div class="container mt-4">
-        <Filter setFilteredTasks={setFilteredTasks} />
+        <Filter tasksData={data} onDataChange={handleDataChange}/>
       </div>
 
-      {/* <div class="container mt-3 mb-3">
+      <div class="container mt-3 mb-3">
         <NewTask />
-      </div> */}
+      </div>
 
       <div class="container" className="App">
-        <TodoList tasksData={filteredTasks} />
+        <TodoList tasksData={data}/>
       </div>
 
 

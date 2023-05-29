@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import ManageTaskService from '../service/ManageTaskService';
 
-const Filter = ({ setFilteredTasks }) => {
+const Filter = ({ onDataChange }) => {
     const [inputText, setInputText] = useState('');
     const [priority, setPriority] = useState('');
     const [state, setState] = useState('');
@@ -55,7 +55,7 @@ const Filter = ({ setFilteredTasks }) => {
             ManageTaskService.filterTasks(filters)
                 .then(response => {
                     const filteredTasks = response.data;
-                    setFilteredTasks(filteredTasks);
+                    onDataChange(filteredTasks)
                 });
         }
     };
