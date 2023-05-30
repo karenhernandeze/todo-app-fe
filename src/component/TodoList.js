@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ManageTaskService from '../service/ManageTaskService';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { parseISO } from 'date-fns';
+import { differenceInDays, format, parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './newTask.css'
@@ -53,7 +53,7 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
             refreshItems()
           }
         )
-      }else if (task.done === false) {
+      } else if (task.done === false) {
         ManageTaskService.markTaskAsDone(event.target.id, foundTask).then(
           response => {
             doneUndone()
@@ -200,6 +200,59 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
     setCurrentPage(pageNumber);
   };
 
+  const taskLogic = (date) => {
+    // data to be displayed 
+    var formattedDate;
+    // number in days between today and due date 
+    var daysBetween
+    // flag to check how many time is left till due date 
+    var timeTillDueDate;
+    if (date) {
+      const dueDate = new Date(date);
+      formattedDate = format(dueDate, 'MM-dd-yyyy');
+      const startDate = new Date(); 
+      const endDate = parseISO(date); 
+      daysBetween = differenceInDays(endDate, startDate);
+      console.log(endDate)
+      console.log(startDate)
+      console.log(daysBetween)
+    } else {
+      formattedDate = date
+      timeTillDueDate = 0
+    }
+    
+    if (daysBetween < 7 && daysBetween > 0) {
+      timeTillDueDate = 1
+    } else if (daysBetween < 14 && daysBetween > 0) {
+      timeTillDueDate = 2
+    } else if (daysBetween > 14 && daysBetween > 0) {
+      timeTillDueDate = 3
+    } else if (parseInt(daysBetween) <= 0){
+      timeTillDueDate = 4
+
+  console.log("The number is negative");
+    }
+
+    const cellStyle = {
+      backgroundColor: (timeTillDueDate == 0) ? 'white' : 
+        (timeTillDueDate == 1) ? "#E10808" : 
+        (timeTillDueDate == 2) ? "#E4BE0D" : 
+        (timeTillDueDate == 3) ? "#4caf50" :
+        (timeTillDueDate == 4) ? "#B40C0C" : 'inherit',
+      border: (timeTillDueDate == 0) ? '1px solid #dee2e6' : 
+      (timeTillDueDate == 1) ? "2px solid #E10808" : 
+      (timeTillDueDate == 2) ? "2px solid #E4BE0D" : 
+      (timeTillDueDate == 3) ? "2px solid #4caf50" :
+      (timeTillDueDate == 4) ? "2px solid #B40C0C" : 'inherit',
+    };
+
+    return (
+      <td class="align-middle" style={cellStyle}>
+        {formattedDate}
+      </td>
+    )
+  }
+
   return (
     <div class="row h-100">
       <div class="col-12 align-self-start h-75">
@@ -245,11 +298,7 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
                         <td class="align-middle">
                           {task.priority}
                         </td>
-                        <td class="align-middle">
-                          {task.dueDate}
-                          {/* .substring(0, task.dueDate.indexOf('T'))} */}
-                          {/* dateTimeString.substring(0, dateTimeString.indexOf('T')) */}
-                        </td>
+                        {taskLogic(task.dueDate)}
                         <td>
                           {/* edit  */}
                           <button
@@ -363,7 +412,6 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
 
       {/* PAGINATION  */}
       <div class="col-12 align-self-center d-flex justify-content-center">
-
         <Pagination>
           <Pagination.Prev
             onClick={() => handlePageChange(currentPage - 1)}

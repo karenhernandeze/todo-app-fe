@@ -6,6 +6,7 @@ export class ManageTaskService {
     async retrieveAllTasks() {
         try {
             const data = axios.get(apiKey, { crossdomain: true })
+            console.log(data)
             return data;
         } catch (err) {
             console.log(err);
@@ -45,6 +46,7 @@ export class ManageTaskService {
 
     async createTasks(task) {
         try {
+            console.log(task)
             const data = axios.post(`${apiKey}`, task, { crossdomain: true })
             return data;
         } catch (err) {

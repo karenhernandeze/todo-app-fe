@@ -15,9 +15,12 @@ const NewTask = ({ dataUpdated }) => {
   // handle date 
   const handleDateChange = (date) => {
     setSelectedDate(date);
+    console.log(date)
   };
   const saveDate = () => {
-    if (selectedDate) {
+    console.log(selectedDate)
+    if (selectedDate != null) {
+      console.log("HERE?")
       const year = selectedDate.getUTCFullYear();
       const month = String(selectedDate.getUTCMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getUTCDate()).padStart(2, '0');
@@ -26,7 +29,11 @@ const NewTask = ({ dataUpdated }) => {
       const seconds = String(selectedDate.getUTCSeconds()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
       return formattedDate
-    } else return ""
+    } else{
+      console.log("Here")
+      return null
+
+    } 
   };
 
   // valid priority 
@@ -66,7 +73,8 @@ const NewTask = ({ dataUpdated }) => {
     if (priority === '') {
       setValidPriority(false);
     } else {
-      const dateFormatted = saveDate()
+      const dateDue = saveDate()
+      console.log(dateDue)
       const dateNow = new Date();
       // FORMAT DATA TO THE DESIRED OUTPUT => yyyy-MM-ddTHH:mm:ss 
       const year = dateNow.getUTCFullYear();
@@ -76,10 +84,11 @@ const NewTask = ({ dataUpdated }) => {
       const minutes = String(dateNow.getUTCMinutes()).padStart(2, '0');
       const seconds = String(dateNow.getUTCSeconds()).padStart(2, '0');
       const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      console.log(formattedDate)
 
       const task = {
         text: inputText,
-        dueDate: dateFormatted,
+        dueDate: dateDue,
         done: false,
         doneDate: "",
         priority: priority,
