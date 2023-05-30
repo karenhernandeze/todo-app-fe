@@ -114,6 +114,47 @@ export class ManageTaskService {
         }
     }
 
+    async retrieveAvgTime() {
+        try {
+            const data = await axios.get(`${apiKey}/time`, { crossdomain: true })
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
+    async retrieveAvgTimeLow() {
+        try {
+            const data = await axios.get(`${apiKey}/time-low`, { crossdomain: true })
+            console.log(data)
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
+    async retrieveAvgTimeMedium() {
+        try {
+            const data = await axios.get(`${apiKey}/time-medium`, { crossdomain: true })
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
+    async retrieveAvgTimeHigh() {
+        try {
+            const data = await axios.get(`${apiKey}/time-high`, { crossdomain: true })
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
 };
 
 export default new ManageTaskService();

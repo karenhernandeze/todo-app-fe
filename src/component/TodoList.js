@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ManageTaskService from '../service/ManageTaskService';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './newTask.css'
@@ -16,6 +16,7 @@ const TodoList = ({ tasksData, dataUpdated }) => {
   const [validText, setValidText] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAlert, setShowAlert] = useState(false);
   const tasksPerPage = 10;
 
   useEffect(() => {
@@ -23,6 +24,10 @@ const TodoList = ({ tasksData, dataUpdated }) => {
     ManageTaskService.retrieveAllTasks().then(
       response => {
         setAllTasks(response.data)
+        setTimeout(() => {
+          setShowAlert(false);
+        }, 3500);
+
       }
     )
   }, [tasksData])
@@ -38,16 +43,20 @@ const TodoList = ({ tasksData, dataUpdated }) => {
   // handle change for checkboxes 
   const handleChange = (task) => {
     return (event) => {
+      const foundTask = AllTasks.find(task => task.id === parseInt(event.target.id));
+      console.log(event.target.id)
+      console.log(foundTask)
       if (task.done === true) {
-        ManageTaskService.markTaskAsUndone(event.target.id, AllTasks[event.target.id - 1]).then(
+        ManageTaskService.markTaskAsUndone(event.target.id).then(
           response => {
             refreshItems()
           }
         )
-      } else if (task.done === false) {
-        ManageTaskService.markTaskAsDone(event.target.id, AllTasks[event.target.id - 1]).then(
+      }else if (task.done === false) {
+        ManageTaskService.markTaskAsDone(event.target.id, foundTask).then(
           response => {
             refreshItems()
+            console.log(response)
           }
         )
       }
@@ -71,7 +80,6 @@ const TodoList = ({ tasksData, dataUpdated }) => {
       setValidPriority(false);
     } else {
       const dateFormatted = saveDate()
-      console.log(dateFormatted)
       const task = {
         text: inputText,
         dueDate: dateFormatted,
@@ -86,6 +94,7 @@ const TodoList = ({ tasksData, dataUpdated }) => {
           setPriority(priority)
           setInputText(inputText)
           setSelectedDate(selectedDate)
+          setShowAlert(true);
         })
     }
 
@@ -93,11 +102,12 @@ const TodoList = ({ tasksData, dataUpdated }) => {
 
   // get info to fill edit modal 
   const handleEditData = (event) => {
-    const data = AllTasks[event.target.id - 1]
-    setPriority(data.priority)
-    setInputText(data.text)
-    const date = parseISO(data.dueDate);
-    if (data.dueDate === null) {
+    const foundTask = AllTasks.find(task => task.id === parseInt(event.target.id));
+    setPriority(foundTask.priority)
+    setInputText(foundTask.text)
+    const date = parseISO(foundTask.dueDate);
+
+    if (foundTask.dueDate === null) {
       setSelectedDate(null)
     } else {
       setSelectedDate(date)
@@ -111,7 +121,13 @@ const TodoList = ({ tasksData, dataUpdated }) => {
   };
   const saveDate = () => {
     if (selectedDate) {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      const year = selectedDate.getUTCFullYear();
+      const month = String(selectedDate.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getUTCDate()).padStart(2, '0');
+      const hours = String(selectedDate.getUTCHours()).padStart(2, '0');
+      const minutes = String(selectedDate.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(selectedDate.getUTCSeconds()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
       return formattedDate
     } else return ""
   };
@@ -221,13 +237,17 @@ const TodoList = ({ tasksData, dataUpdated }) => {
                           </div>
                         </th>
                         <td class="align-middle">
-                          {task.text}
+                          {
+                            task.done === true ? <p class="m-0"> <del> {task.text} </del></p> : <p class="m-0"> {task.text} </p>
+                          }
                         </td>
                         <td class="align-middle">
                           {task.priority}
                         </td>
                         <td class="align-middle">
                           {task.dueDate}
+                          {/* .substring(0, task.dueDate.indexOf('T'))} */}
+                          {/* dateTimeString.substring(0, dateTimeString.indexOf('T')) */}
                         </td>
                         <td>
                           {/* edit  */}
@@ -241,9 +261,22 @@ const TodoList = ({ tasksData, dataUpdated }) => {
                             Edit
                           </button>
                           {/* modal  */}
-                          <div class="modal fade" id={`editTask${task.id}`} tabindex="-1" role="dialog" aria-labelledby="editTask" aria-hidden="true">
+                          <div
+                            class="modal fade"
+                            id={`editTask${task.id}`}
+                            tabindex="-1"
+                            role="dialog"
+                            aria-labelledby="editTask"
+                            aria-hidden="true">
+
                             <div class="modal-dialog" role="document">
                               <div class="modal-content">
+
+                                {showAlert && (
+                                  <div class="alert alert-success" role="alert">
+                                    Task updated successfully!
+                                  </div>
+                                )}
                                 <div class="modal-header">
                                   <h5 class="modal-title" id="exampleModalLabel">Edit To-Do Task</h5>
                                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -330,17 +363,17 @@ const TodoList = ({ tasksData, dataUpdated }) => {
       {/* PAGINATION  */}
       <div class="col-12 align-self-center d-flex justify-content-center">
 
-      <Pagination>
-        <Pagination.Prev
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        />
-        <Pagination.Item active>{currentPage}</Pagination.Item>
-        <Pagination.Next
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentTasks.length < tasksPerPage}
-        />
-      </Pagination>
+        <Pagination>
+          <Pagination.Prev
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          />
+          <Pagination.Item active>{currentPage}</Pagination.Item>
+          <Pagination.Next
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentTasks.length < tasksPerPage}
+          />
+        </Pagination>
       </div>
     </div >
   );

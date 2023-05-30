@@ -10,16 +10,22 @@ const NewTask = ({ dataUpdated }) => {
   const [validPriority, setValidPriority] = useState(true);
   const [inputText, setInputText] = useState('');
   const [validText, setValidText] = useState(true);
+  const [limitText, setLimitText] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
 
   // handle date 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    console.log(date)
   };
   const saveDate = () => {
     if (selectedDate) {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      const year = selectedDate.getUTCFullYear();
+      const month = String(selectedDate.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getUTCDate()).padStart(2, '0');
+      const hours = String(selectedDate.getUTCHours()).padStart(2, '0');
+      const minutes = String(selectedDate.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(selectedDate.getUTCSeconds()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
       return formattedDate
     } else return ""
   };
@@ -39,6 +45,11 @@ const NewTask = ({ dataUpdated }) => {
     const text = event.target.value;
     setInputText(text);
     setValidText(true);
+    if (inputText.length >= 120) {
+      setLimitText(false)
+    } else {
+      setLimitText(true)
+    }
   };
   // Check if the key is a letter in the date input
   const handleKeyDown = (event) => {
@@ -57,14 +68,23 @@ const NewTask = ({ dataUpdated }) => {
       setValidPriority(false);
     } else {
       const dateFormatted = saveDate()
-      const today = new Date();
+      const dateNow = new Date();
+      // FORMAT DATA TO THE DESIRED OUTPUT => yyyy-MM-ddTHH:mm:ss 
+      const year = dateNow.getUTCFullYear();
+      const month = String(dateNow.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(dateNow.getUTCDate()).padStart(2, '0');
+      const hours = String(dateNow.getUTCHours()).padStart(2, '0');
+      const minutes = String(dateNow.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(dateNow.getUTCSeconds()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+
       const task = {
         text: inputText,
         dueDate: dateFormatted,
         done: false,
         doneDate: "",
         priority: priority,
-        creationDate: format(today, 'yyyy-MM-dd'),
+        creationDate: formattedDate,
       }
       ManageTaskService.createTasks(task)
         .then(response => {
@@ -101,12 +121,13 @@ const NewTask = ({ dataUpdated }) => {
                   <input
                     onChange={handleChangeText}
                     type="text"
-                    className={`form-control ${validText ? '' : 'is-invalid'}`}
+                    className={`form-control ${!limitText || !validText ? 'is-invalid' : ''}`}
                     class="form-control"
                     id="text"
                     value={inputText}
                     placeholder="Description" />
                   {!validText && <div className="invalid-feedback">Please enter a value.</div>}
+                  {!limitText && <div className="invalid-feedback">Limit of 120 chars.</div>}
                 </div>
                 {/* Priority  */}
                 <div class="form-group">
@@ -139,7 +160,7 @@ const NewTask = ({ dataUpdated }) => {
                       class="w-100"
                       onKeyDown={handleKeyDown}
                       isClearable
-                      dateFormat="MM/dd/yyyy"
+                    // dateFormat="MM/dd/yyyy"
                     />
                   </div>
                   <p class="text-secondary"><small>*Optional</small></p>
