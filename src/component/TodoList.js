@@ -7,7 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './newTask.css'
 import { Pagination } from 'react-bootstrap';
 
-const TodoList = ({ tasksData, dataUpdated }) => {
+const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
   const [TasksData, setTasksData] = useState([]);
   const [AllTasks, setAllTasks] = useState([]);
   const [priority, setPriority] = useState('');
@@ -49,14 +49,15 @@ const TodoList = ({ tasksData, dataUpdated }) => {
       if (task.done === true) {
         ManageTaskService.markTaskAsUndone(event.target.id).then(
           response => {
+            doneUndone()
             refreshItems()
           }
         )
       }else if (task.done === false) {
         ManageTaskService.markTaskAsDone(event.target.id, foundTask).then(
           response => {
+            doneUndone()
             refreshItems()
-            console.log(response)
           }
         )
       }

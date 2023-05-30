@@ -3,7 +3,6 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './newTask.css'
 import ManageTaskService from '../service/ManageTaskService';
-import { format } from 'date-fns';
 
 const NewTask = ({ dataUpdated }) => {
   const [priority, setPriority] = useState('');
