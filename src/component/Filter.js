@@ -18,7 +18,7 @@ const Filter = ({ onDataChange }) => {
     const handleChangePriority = (event) => {
         const selectedValue = event.target.value;
         setPriority(selectedValue);
-        if (selectedValue == "all") {
+        if (selectedValue === "all") {
             setValidPriority(false);
         } else {
             setValidPriority(true);
@@ -28,7 +28,7 @@ const Filter = ({ onDataChange }) => {
     const handleChangeState = (event) => {
         const state = event.target.value;
         setState(state);
-        if (state == "all") {
+        if (state === "all") {
             setValidPriority(false);
         } else {
             setValidState(true);
@@ -40,13 +40,13 @@ const Filter = ({ onDataChange }) => {
         if (inputText === '') {
             setValidText(false);
         }
-        if (priority == '') {
+        if (priority === '') {
             setValidPriority(false);
         }
-        if (state == '') {
+        if (state === '') {
             setValidState(false);
         } else {
-            const doneUndone = (state == 'done' ? "true" : "false")
+            const doneUndone = (state === 'done' ? "true" : "false")
             const filters = {
                 text: inputText,
                 done: doneUndone,

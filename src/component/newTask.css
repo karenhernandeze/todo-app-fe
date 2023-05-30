@@ -1,0 +1,15 @@
+.basic-datepicker {
+    display: flex;
+    align-items: center;
+}
+
+.custom-datepicker {
+    cursor:pointer;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #555;
+    background-color: #fff;
+}

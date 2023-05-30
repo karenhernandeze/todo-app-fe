@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import ManageTaskService from '../service/ManageTaskService';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { format, parseISO } from 'date-fns';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import './newTask.css'
 
-const TodoList = ({ tasksData }) => {
+const TodoList = ({ tasksData, dataUpdated }) => {
   const [TasksData, setTasksData] = useState([]);
   const [AllTasks, setAllTasks] = useState([]);
+  const [priority, setPriority] = useState('');
+  const [validPriority, setValidPriority] = useState(true);
+  const [inputText, setInputText] = useState('');
+  const [validText, setValidText] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     setTasksData(tasksData)
@@ -23,15 +32,16 @@ const TodoList = ({ tasksData }) => {
     )
   }
 
+  // handle change for checkboxes 
   const handleChange = (task) => {
     return (event) => {
-      if (task.done == true) {
+      if (task.done === true) {
         ManageTaskService.markTaskAsUndone(event.target.id, AllTasks[event.target.id - 1]).then(
           response => {
             refreshItems()
           }
         )
-      } else if (task.done == false) {
+      } else if (task.done === false) {
         ManageTaskService.markTaskAsDone(event.target.id, AllTasks[event.target.id - 1]).then(
           response => {
             refreshItems()
@@ -41,9 +51,92 @@ const TodoList = ({ tasksData }) => {
     };
   };
 
+  const handleDelete = (event) => {
+    ManageTaskService.deleteTasks(event.target.id).then(
+      response => { refreshItems() }
+    )
+  }
+
+  const handleEditSubmit = (event) => {
+    const data = AllTasks[event.target.id - 1]
+    event.preventDefault();
+    if (inputText === '') {
+      setValidText(false);
+    }
+    if (priority === '') {
+      setValidPriority(false);
+    } else {
+      const dateFormatted = saveDate()
+      console.log(dateFormatted)
+      const task = {
+        text: inputText,
+        dueDate: dateFormatted,
+        done: data.done,
+        doneDate: data.doneDate,
+        priority: priority,
+        creationDate: data.creationDate,
+      }
+      ManageTaskService.updateTask(task, event.target.id)
+        .then(response => { 
+          dataUpdated() 
+          setPriority(priority)
+          setInputText(inputText)
+          setSelectedDate(selectedDate)
+        })
+    }
+
+  };
+
+  const handleEditData = (event) => {
+    const data = AllTasks[event.target.id - 1]
+    console.log(data)
+    setPriority(data.priority)
+    setInputText(data.text)
+    const date = parseISO(data.dueDate);
+    if (data.dueDate === null) {
+      setSelectedDate(null)
+    } else {
+      setSelectedDate(date)
+    }
+  }
+
+  // FUNCTIONS FOR THE EDIT MODAL 
+  // handle date 
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+  const saveDate = () => {
+    if (selectedDate) {
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      return formattedDate
+    } else return ""
+  };
+  // valid priority 
+  const handleChangePriority = (event) => {
+    const selectedValue = event.target.value;
+    setPriority(selectedValue);
+    if (selectedValue === "all") {
+      setValidPriority(false);
+    } else {
+      setValidPriority(true);
+    }
+  };
+  // handle text 
+  const handleChangeText = (event) => {
+    const text = event.target.value;
+    setInputText(text);
+    setValidText(true);
+  };
+  // Check if the key is a letter in the date input
+  const handleKeyDown = (event) => {
+    const key = event.key;
+    if (/[a-zA-Z]/.test(key)) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <div class="row h-100">
-
       <div class="col-12 align-self-start h-75">
         <div class="row align-items-start">
           <div class="col">
@@ -67,7 +160,8 @@ const TodoList = ({ tasksData }) => {
               </thead>
               <tbody>
                 {
-                  TasksData.map((task) => {
+                  TasksData.map((task, index) => {
+                    const taskId = index + 1;
                     return (
                       <tr>
                         <th class="align-middle">
@@ -85,9 +179,92 @@ const TodoList = ({ tasksData }) => {
                           {task.dueDate}
                         </td>
                         <td>
-                          <button type="submit" class="btn btn-link">Edit</button>
+                          {/* edit  */}
+                          <button
+                            onClick={handleEditData}
+                            id={task.id}
+                            type="button"
+                            class="btn btn-link"
+                            data-toggle="modal"
+                            data-target={`#editTask${task.id}`}>
+                            Edit
+                          </button>
+                          {/* modal  */}
+                          <div class="modal fade" id={`editTask${task.id}`} tabindex="-1" role="dialog" aria-labelledby="editTask" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="exampleModalLabel">Edit To-Do Task</h5>
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                  </button>
+                                </div>
+                                <div class="modal-body">
+                                  <form>
+                                    {/* Name  */}
+                                    <div class="form-group">
+                                      <label for="exampleFormControlInput1">Name</label>
+                                      <input
+                                        onChange={handleChangeText}
+                                        type="text"
+                                        className={`form-control ${validText ? '' : 'is-invalid'}`}
+                                        class="form-control"
+                                        id="text"
+                                        value={inputText}
+                                        placeholder="Description" />
+                                      {!validText && <div className="invalid-feedback">Please enter a value.</div>}
+                                    </div>
+                                    {/* Priority  */}
+                                    <div class="form-group">
+                                      <label for="text" >Priority</label>
+                                      <select
+                                        className={`form-control ${validPriority ? '' : 'is-invalid'}`}
+                                        type="text"
+                                        class="mw-100 p-2 custom-select my-1 mr-sm-2"
+                                        value={priority}
+                                        onChange={handleChangePriority}
+                                        id="priority">
+                                        <option defaultValue value="all">All...</option>
+                                        <option value="high">High</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="low">Low</option>
+                                        {!validPriority && <div className="invalid-feedback">Please choose an option.</div>}
+                                      </select>
+                                    </div>
+                                    {/* Due Date  */}
+                                    <div class="form-group">
+                                      <div>
+                                        <label for="text" >Due Date *</label>
+                                      </div>
+                                      <div class="form-group" className="basic-datepicker">
+                                        <DatePicker
+                                          selected={selectedDate === "invalid" ? "" : selectedDate}
+                                          onChange={handleDateChange}
+                                          placeholderText="MM/dd/yyyy"
+                                          className="custom-datepicker"
+                                          class="w-100"
+                                          onKeyDown={handleKeyDown}
+                                          isClearable
+                                          dateFormat="MM/dd/yyyy"
+                                        />
+                                      </div>
+                                      <p class="text-secondary"><small>*Optional</small></p>
+                                    </div>
+                                  </form>
+                                </div>
+                                {/* Buttons  */}
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                  <button onClick={handleEditSubmit} id={task.id} type="submit" class="btn btn-primary">
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
 
-                          <button type="button" class="btn btn-link">Delete</button>
+                          {/* delete  */}
+                          <button type="submit" class="btn btn-link" id={task.id} onClick={handleDelete}>Delete</button>
                         </td>
                       </tr>
                     )
@@ -99,13 +276,14 @@ const TodoList = ({ tasksData }) => {
         </div>
       </div>
 
+      {/* PAGINATION  */}
       <div class="col-12 align-self-center d-flex justify-content-center">
         <div class="row">
           <div class="col">
             <nav aria-label="...">
               <ul class="pagination">
                 <li class="page-item disabled">
-                  <a class="page-link">Previous</a>
+                  <a href="#!" class="page-link">Previous</a>
                 </li>
                 <li class="page-item"><a class="page-link" href="#">1</a></li>
                 <li class="page-item active" aria-current="page">

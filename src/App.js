@@ -23,6 +23,13 @@ function App() {
     setData(newData);
   };
 
+  const updateData = () => {
+    ManageTaskService.retrieveAllTasks()
+      .then(response => {
+        setData(response.data);
+      })
+  }
+
   return (
     <div class="container shadow-lg p-3 mb-5 bg-white rounded mt-4">
       <div class="container mt-4">
@@ -30,11 +37,11 @@ function App() {
       </div>
 
       <div class="container mt-3 mb-3">
-        <NewTask />
+        <NewTask dataUpdated={updateData}/>
       </div>
 
       <div class="container" className="App">
-        <TodoList tasksData={data}/>
+        <TodoList tasksData={data} dataUpdated={updateData}/>
       </div>
 
 
