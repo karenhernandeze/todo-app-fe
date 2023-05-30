@@ -177,7 +177,7 @@ const TodoList = ({ tasksData, dataUpdated }) => {
 
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
-  const currentTasks = tasksData.slice(indexOfFirstTask, indexOfLastTask);
+  const currentTasks = TasksData.slice(indexOfFirstTask, indexOfLastTask);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -212,8 +212,7 @@ const TodoList = ({ tasksData, dataUpdated }) => {
               </thead>
               <tbody>
                 {
-                  currentTasks.map((task, index) => {
-                    const taskId = index + 1;
+                  currentTasks.map((task) => {
                     return (
                       <tr>
                         <th class="align-middle">
@@ -343,28 +342,6 @@ const TodoList = ({ tasksData, dataUpdated }) => {
         />
       </Pagination>
       </div>
-
-      {/* <div class="col-12 align-self-center d-flex justify-content-center">
-        <div class="row">
-          <div class="col">
-            <nav aria-label="...">
-              <ul class="pagination">
-                <li class="page-item disabled">
-                  <a href="#!" class="page-link">Previous</a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                <li class="page-item active" aria-current="page">
-                  <a class="page-link" href="#">2</a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                  <a class="page-link" href="#">Next</a>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-      </div> */}
     </div >
   );
 };
