@@ -73,6 +73,47 @@ export class ManageTaskService {
             return err.message
         }
     }
+
+    async retrieveAllTasksSortedDDA() {
+        try {
+            const data = axios.get(`${apiKey}/sortasc`, { crossdomain: true })
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
+    async retrieveAllTasksSortedDDD() {
+        try {
+            const data = axios.get(`${apiKey}/sortdes`, { crossdomain: true })
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
+    async retrieveAllTasksSortedPDA() {
+        try {
+            const data = axios.get(`${apiKey}/sort-priorityasc`, { crossdomain: true })
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
+    async retrieveAllTasksSortedPDD() {
+        try {
+            const data = axios.get(`${apiKey}/sort-prioritydes`, { crossdomain: true })
+            return data;
+        } catch (err) {
+            console.log(err);
+            return err.message
+        }
+    }
+
 };
 
 export default new ManageTaskService();

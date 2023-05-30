@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './newTask.css'
+import { Pagination } from 'react-bootstrap';
 
 const TodoList = ({ tasksData, dataUpdated }) => {
   const [TasksData, setTasksData] = useState([]);
@@ -14,6 +15,8 @@ const TodoList = ({ tasksData, dataUpdated }) => {
   const [inputText, setInputText] = useState('');
   const [validText, setValidText] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 10;
 
   useEffect(() => {
     setTasksData(tasksData)
@@ -57,6 +60,7 @@ const TodoList = ({ tasksData, dataUpdated }) => {
     )
   }
 
+  // submit changes in task 
   const handleEditSubmit = (event) => {
     const data = AllTasks[event.target.id - 1]
     event.preventDefault();
@@ -77,8 +81,8 @@ const TodoList = ({ tasksData, dataUpdated }) => {
         creationDate: data.creationDate,
       }
       ManageTaskService.updateTask(task, event.target.id)
-        .then(response => { 
-          dataUpdated() 
+        .then(response => {
+          dataUpdated()
           setPriority(priority)
           setInputText(inputText)
           setSelectedDate(selectedDate)
@@ -87,9 +91,9 @@ const TodoList = ({ tasksData, dataUpdated }) => {
 
   };
 
+  // get info to fill edit modal 
   const handleEditData = (event) => {
     const data = AllTasks[event.target.id - 1]
-    console.log(data)
     setPriority(data.priority)
     setInputText(data.text)
     const date = parseISO(data.dueDate);
@@ -135,6 +139,50 @@ const TodoList = ({ tasksData, dataUpdated }) => {
     }
   };
 
+  // handle priority sort by ascending and des
+  const [prioritySort, setPrioritySort] = useState('');
+  const sortPA = () => {
+    if (prioritySort === "asc") {
+      ManageTaskService.retrieveAllTasksSortedPDD()
+        .then(response => {
+          setTasksData(response.data)
+          setPrioritySort('')
+        })
+    } else {
+      ManageTaskService.retrieveAllTasksSortedPDA()
+        .then(response => {
+          setTasksData(response.data)
+          setPrioritySort('asc')
+        })
+    }
+  }
+
+  // handle duedate sort by ascending and des
+  const [dueDateSort, setDueDateSort] = useState('');
+  const sortDD = () => {
+    if (dueDateSort === "asc") {
+      ManageTaskService.retrieveAllTasksSortedDDD()
+        .then(response => {
+          setTasksData(response.data)
+          setDueDateSort('')
+        })
+    } else {
+      ManageTaskService.retrieveAllTasksSortedDDA()
+        .then(response => {
+          setTasksData(response.data)
+          setDueDateSort('asc')
+        })
+    }
+  }
+
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = tasksData.slice(indexOfFirstTask, indexOfLastTask);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <div class="row h-100">
       <div class="col-12 align-self-start h-75">
@@ -144,23 +192,27 @@ const TodoList = ({ tasksData, dataUpdated }) => {
               <thead>
                 <tr>
                   <th scope="col" style={{ width: "40px" }}> </th>
-                  <th scope="col">Name</th>
+                  <th scope="col" class="align-middle">Name</th>
                   <th scope="col">Priority
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-up ml-3" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
-                    </svg>
+                    <button onClick={sortPA} type="button" class="btn btn-outline-white p-0 ml-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-up" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
+                      </svg>
+                    </button>
                   </th>
                   <th scope="col">Due Date
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-up ml-3" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
-                    </svg>
+                    <button onClick={sortDD} type="button" class="btn btn-outline-white p-0 ml-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-up" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z" />
+                      </svg>
+                    </button>
                   </th>
-                  <th scope="col">Actions</th>
+                  <th scope="col" class="align-middle">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {
-                  TasksData.map((task, index) => {
+                  currentTasks.map((task, index) => {
                     const taskId = index + 1;
                     return (
                       <tr>
@@ -278,6 +330,21 @@ const TodoList = ({ tasksData, dataUpdated }) => {
 
       {/* PAGINATION  */}
       <div class="col-12 align-self-center d-flex justify-content-center">
+
+      <Pagination>
+        <Pagination.Prev
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        />
+        <Pagination.Item active>{currentPage}</Pagination.Item>
+        <Pagination.Next
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentTasks.length < tasksPerPage}
+        />
+      </Pagination>
+      </div>
+
+      {/* <div class="col-12 align-self-center d-flex justify-content-center">
         <div class="row">
           <div class="col">
             <nav aria-label="...">
@@ -297,7 +364,7 @@ const TodoList = ({ tasksData, dataUpdated }) => {
             </nav>
           </div>
         </div>
-      </div>
+      </div> */}
     </div >
   );
 };
