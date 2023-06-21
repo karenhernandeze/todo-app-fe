@@ -23,10 +23,13 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
     setTasksData(tasksData)
     ManageTaskService.retrieveAllTasks().then(
       response => {
+        console.log(response.data)
+
         setAllTasks(response.data)
         setTimeout(() => {
           setShowAlert(false);
         }, 3500);
+        console.log(TasksData)
 
       }
     )
@@ -44,8 +47,6 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
   const handleChange = (task) => {
     return (event) => {
       const foundTask = AllTasks.find(task => task.id === parseInt(event.target.id));
-      console.log(event.target.id)
-      console.log(foundTask)
       if (task.done === true) {
         ManageTaskService.markTaskAsUndone(event.target.id).then(
           response => {
@@ -213,9 +214,6 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
       const startDate = new Date(); 
       const endDate = parseISO(date); 
       daysBetween = differenceInDays(endDate, startDate);
-      console.log(endDate)
-      console.log(startDate)
-      console.log(daysBetween)
     } else {
       formattedDate = date
       timeTillDueDate = 0
@@ -229,8 +227,6 @@ const TodoList = ({ tasksData, dataUpdated, doneUndone }) => {
       timeTillDueDate = 3
     } else if (parseInt(daysBetween) <= 0){
       timeTillDueDate = 4
-
-  console.log("The number is negative");
     }
 
     const cellStyle = {
